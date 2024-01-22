@@ -1,3 +1,64 @@
+# Solution Explained
+In this project, I have created a simple layout that follows the design of one of your projects on Github. It also utilizes Cobra library for the CLI implementation.
+
+## Important Note
+PLEASE run `make unzip` in order to unzip and run with the fixtures sample provided by you. Or make sure to have a sample file with recipes called files/fixture.json.
+
+Because the JSON file size is unknown, it could be in GB, I had to use JSON streaming read its content. This helps in avoiding memory issues, but runs a little bit slow.
+While I used the standard JSON library, I wanted to mention that there are other third party libraries that could improve performance, i.e. runs better
+than standard library. 
+
+Current implementation calculate the stats within 10-15 seconds, given the fixtures.json with around **5000_0000** lines, on my Macbook pro. However, it runs slower in docker container and takes around 2m for the same file. 
+
+## Time and Space Complexities
+Maps were used where possible. Maps have time complexity of O(1). Since the task explicitly indicate that distinct recipes names is lower than 2K, I have declared maps with predefined size `recipeCounts := make(map[string]int, 2000)`, which improves performance, since golang don't have to grow the map on every new key added. The same also applies to distinct postcodes, lower than 1M, I also declared with predefined size `postCodeCounts := make(map[string]int, 1000_000)`. 
+
+Maps used wherever possible also to increase lookup time. For instance, when searching for recipes names that contains some words, I used a map to convert them into a map, and then later used to look for matching words from each recipe name. 
+```go
+wordsMap := make(map[string]bool, len(s.cfg.Words))
+for _, word := range s.cfg.Words {
+    wordsMap[strings.ToLower(word)] = true
+}
+```
+
+To show counts for each distinct recipe name, I used the same map `recipeCounts := make(map[string]int, 2000)`, took all keys, sorted them using standard library `slices.Sort(keys)`, which is based on **quicksort** algorithm, the most efficient sorting algorithm.
+
+## Design Patterns
+For the configuration I used the builder pattern. Configs runs with default, however, if you provide arguments with your command, e.g. file name, these will be applied by using the builder pattern. See cmd/cobra.go. Other patterns used is Strategy patters, e.g. in `JsonStats` struct has a dependency on the `parser.Parser`, allowing for different parser implementations to be injected. 
+
+Additionally, making sure to make the code more modular and testable, I always try to apply SOLID principles.
+
+## Data Sanitization
+
+Proper data sanitization applied as per requirements. For instance, delivery formats check, postcode length checks, recipes length checks, etc.
+
+## Unit Tests
+Unit tests were applied to the most critical parts, however, not fully covering everything due to time limitations. You can run the tests via `make test`.
+
+## How to Test/Run
+First, the tool runs with default configurations, please see `pkg/config/config.go`. These configs can be overwritten via environment variables. Simply export your variables, this will allow you not to provide arguments for convenience. 
+
+To build the binary in Docker run: `make dockerBuildRunWithDefaultArgs` this will run the tool with default args. Default args are:
+- file: /app/files/fixtures.json
+- words: Potato,Mushroom,Veggie
+- postcode: 10120
+- from time: 10AM
+- to time: 3PM
+
+Please note running with default args means loading a fixtures.json file with **5000_000** lines. It will take more than 1m to finish processing and displaying the result.
+
+If you want to test with your own file, words, or time range, see the example `make dockerBuildRunWithCustomArgs`to run yours. 
+
+If you want to open a shell to docker container and run the tool, then simply run `parser stats` (already in $path) and add any of your desired arguments. Otherwise it will run with default ones.
+
+## Future Improvements
+- More in depth unit tests
+- Integration tests
+
+----
+END OF MY INSTRUCTIONS
+----
+
 Recipe Stats Calculator
 ====
 

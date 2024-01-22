@@ -1,0 +1,15 @@
+Improvements:
+- Make the tool interactive, instead of reading the file content every time, read it once
+and then listen to other commands
+- 
+
+Todo:
+- Use cobra for the cli
+- Check if postcode exists
+- Sanitize data during streaming, drop unwanted or incorrect data
+
+
+- Add unit tests
+- Revisit the code efficiency
+- Talk about time and space complexties
+- 
